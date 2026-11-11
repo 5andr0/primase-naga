@@ -144,3 +144,8 @@ required-features = ["wgsl-in", "spv-in", "spv-out", "hlsl-out", "glsl-out", "ms
 name = "no_contraction_primase"
 path = "tests/no_contraction_primase.rs"
 required-features = ["wgsl-in", "wgsl-out", "spv-out", "hlsl-out"]
+
+[[test]]
+name = "exp2_control"
+path = "tests/exp2_control.rs"
+required-features = ["wgsl-in", "wgsl-out", "spv-in", "spv-out", "hlsl-out", "glsl-out", "msl-out", "serialize", "deserialize"]
