@@ -1,17 +1,45 @@
-name: ci
+name: Fork qualification
+
 on:
   push:
-  pull_request:
+    branches: [codex/primase-fork-ci]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   check:
+    name: ${{ matrix.source.name }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+        source:
+          - name: zero-lod
+            ref: c1223344d5a61c1d826f69b605cdd17662852d2f
+            integration: ''
+          - name: correspondence
+            ref: f1d6aa825b0ba772f675d482f238e9656c4a2b8b
+            integration: --test execution_correspondence --test primase_atomic_correspondence
+          - name: no-contraction
+            ref: 46fe307f54eae5fc90ece5ebfc6efad346f30028
+            integration: --test function_control_serialization --test no_contraction --test no_contraction_primase
+          - name: exp2
+            ref: 5d544dd04cfbf9a731d3c183fdce372ebaaac138
+            integration: --test function_control_serialization --test no_contraction --test no_contraction_primase --test exp2_control
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          ref: ${{ matrix.source.ref }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: stable
       - run: cargo check --all-features
       - run: cargo test --lib --all-features
+      - name: Focused integration regressions
+        if: matrix.source.integration != ''
+        run: cargo test --all-features ${{ matrix.source.integration }}
